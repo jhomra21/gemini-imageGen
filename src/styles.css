@@ -227,3 +227,17 @@ code {
   transition-timing-function: ease-in-out;
   /* Ensure filter is not part of the transition if it was causing issues */
 }
+
+/* Staggered fade-in-up animations for App.tsx */
+.fade-in-up-initial {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.fade-in-up-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition-property: opacity, transform;
+  transition-duration: 500ms;
+  transition-timing-function: ease-out;
+}

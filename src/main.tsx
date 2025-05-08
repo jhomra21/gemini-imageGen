@@ -26,7 +26,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarTrigger
+  SidebarTrigger,
+  useSidebar
 } from './components/ui/sidebar'
 import { Tooltip, TooltipContent, TooltipTrigger } from "./components/ui/tooltip"
 
@@ -38,6 +39,14 @@ const navRoutes: { path: string; name: string; iconName: IconName }[] = [
 ];
 
 function AppSidebar() {
+  const { setOpenMobile, isMobile } = useSidebar();
+
+  const handleLinkClick = () => {
+    if (isMobile()) {
+      setOpenMobile(false);
+    }
+  };
+
   return (
     <Sidebar collapsible="icon" variant="floating">
       <SidebarContent>
@@ -61,6 +70,7 @@ function AppSidebar() {
                         to={route.path} 
                         preload="intent"
                         class="w-full text-left"
+                        onClick={handleLinkClick}
                       >
                         {linkChildren()} 
                       </SidebarMenuButton>
@@ -80,8 +90,8 @@ const rootRoute = createRootRoute({
   component: () => (
     <SidebarProvider>
       <AppSidebar />
-      <main class="flex flex-col flex-grow h-screen overflow-hidden p-4 transition-all duration-150 ease-in data-[sidebar-open=true]:md:ml-[var(--sidebar-width)] min-w-0">
-        <div class="flex-shrink-0">
+      <main class="flex flex-col flex-grow h-screen overflow-hidden p-2 transition-all duration-150 ease-in data-[sidebar-open=true]:md:ml-[var(--sidebar-width)] min-w-0">
+        <div class="flex-shrink-0 p-1.5 border border-gray-200 backdrop-blur-sm rounded-lg">
           <Tooltip>
             <TooltipTrigger>
               <SidebarTrigger />
