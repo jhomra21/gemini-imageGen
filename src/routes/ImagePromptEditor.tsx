@@ -37,7 +37,9 @@ const editImageWithPrompt = async (payload: {
   mimeType: string;
   prompt: string;
 }): Promise<ApiSuccessResponse> => {
-  const response = await fetch("http://127.0.0.1:8787/api/edit-image-with-prompt", {
+  const response = await fetch( import.meta.env.PROD
+    ? "https://gemini-image-edit.jhonra121.workers.dev/api/edit-image-with-prompt"
+    : "http://127.0.0.1:8787/api/edit-image-with-prompt", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

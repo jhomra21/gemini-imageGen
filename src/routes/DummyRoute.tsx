@@ -6,7 +6,11 @@ import { ImagePromptEditor } from "./ImagePromptEditor";
 // The actual fetching logic - explicitly type the return as Promise<string>
 const fetchApiData = async (): Promise<string> => {
   // Connect to the API endpoint
-  const response = await fetch("http://127.0.0.1:8787/"); // Assuming GET request to the root
+  const response = await fetch(
+    import.meta.env.PROD
+      ? "https://gemini-image-edit.jhonra121.workers.dev/" 
+      : "http://127.0.0.1:8787/"
+  ); // Use production URL or local dev URL
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
   }
