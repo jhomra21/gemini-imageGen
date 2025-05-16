@@ -31,11 +31,11 @@ import {
 } from './components/ui/sidebar'
 import { Tooltip, TooltipContent, TooltipTrigger } from "./components/ui/tooltip"
 
-import { DummyRoute } from './routes/DummyRoute'
+import { ShopifyRoute } from './routes/ShopifyRoute'
 
 const navRoutes: { path: string; name: string; iconName: IconName }[] = [
   { path: '/', name: 'Home', iconName: 'house' },
-  { path: '/dummy', name: 'Dummy', iconName: 'dumbbell' },
+  { path: '/shopify', name: 'Shopify', iconName: 'shoppingCart' },
 ];
 
 function AppSidebar() {
@@ -116,13 +116,14 @@ const indexRoute = createRoute({
   component: App,
 })
 
-const dummyRoute = createRoute({
+
+const shopifyRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/dummy',
-  component: DummyRoute,
+  path: '/shopify',
+  component: ShopifyRoute,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, dummyRoute])
+const routeTree = rootRoute.addChildren([indexRoute, shopifyRoute])
 
 const router = createRouter({
   routeTree,
