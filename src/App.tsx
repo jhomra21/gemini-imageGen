@@ -40,7 +40,7 @@ function App() {
           preload="intent"
           class={`px-8 py-3 bg-sky-500 text-white font-semibold rounded-lg shadow-lg hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all transform hover:scale-105 ${buttonClass()}`}
         >
-          Go to API Tester (Dummy Route)
+          Go to Dummy Route
         </Link>
       </div>
     </main>
