@@ -5,16 +5,18 @@ import {
   createRoute,
   createRouter,
   Link,
+  useLocation,
 } from '@tanstack/solid-router'
 import { TanStackRouterDevtools } from '@tanstack/solid-router-devtools'
 import { render } from 'solid-js/web'
-import { For, children as resolveChildren } from 'solid-js'
+import { For, children as resolveChildren, Show, createMemo } from 'solid-js'
+import { Transition } from 'solid-transition-group'
 import { Icon, type IconName } from './components/ui/icon'
 import { QueryClient, QueryClientProvider } from '@tanstack/solid-query'
+import SkeuIcongenPage from './routes/SkeuIcongenPage'
 
 import './styles.css'
 
-import App from './App.tsx'
 
 import {
   Sidebar,
@@ -31,15 +33,17 @@ import {
 } from './components/ui/sidebar'
 import { Tooltip, TooltipContent, TooltipTrigger } from "./components/ui/tooltip"
 
-import { DummyRoute } from './routes/DummyRoute'
+
 
 const navRoutes: { path: string; name: string; iconName: IconName }[] = [
   { path: '/', name: 'Home', iconName: 'house' },
-  { path: '/dummy', name: 'Dummy', iconName: 'dumbbell' },
 ];
 
 function AppSidebar() {
-  const { setOpenMobile, isMobile } = useSidebar();
+  const { setOpenMobile, isMobile, state } = useSidebar();
+  const location = useLocation();
+  
+  const currentPath = () => location().pathname;
 
   const handleLinkClick = () => {
     if (isMobile()) {
@@ -56,10 +60,23 @@ function AppSidebar() {
             <SidebarMenu>
               <For each={navRoutes}>
                 {(route) => {
+                  // Use createMemo for reactive route matching
+                  const isActive = createMemo(() => {
+                    return currentPath() === route.path;
+                  });
+                  
                   const linkChildren = resolveChildren(() => (
-                    <div class="flex items-center gap-2">
-                      <Icon name={route.iconName} class="h-5 w-5" />
-                      <span>{route.name}</span>
+                    <div class="flex items-center gap-2 relative w-full">
+                      <Icon name={route.iconName} class="h-5 w-5 absolute transition-all duration-200" classList={{
+                        "left-0": state() === "expanded",
+                        "-left-0.5": state() === "collapsed"
+                      }} />
+                      <span class="transition-all duration-200 pl-7 transform-gpu" classList={{ 
+                        "opacity-0 blur-md pointer-events-none absolute text-2xl": state() === "collapsed",
+                        "opacity-100 blur-0": state() === "expanded"
+                      }}>
+                        {route.name}
+                      </span>
                     </div>
                   ));
 
@@ -71,6 +88,8 @@ function AppSidebar() {
                         preload="intent"
                         class="w-full text-left"
                         onClick={handleLinkClick}
+                        tooltip={route.name}
+                        isActive={isActive()}
                       >
                         {linkChildren()} 
                       </SidebarMenuButton>
@@ -87,42 +106,72 @@ function AppSidebar() {
 }
 
 const rootRoute = createRootRoute({
-  component: () => (
-    <SidebarProvider>
-      <AppSidebar />
-      <main class="flex flex-col flex-grow h-screen overflow-hidden p-2 transition-all duration-150 ease-in data-[sidebar-open=true]:md:ml-[var(--sidebar-width)] min-w-0">
-        <div class="flex-shrink-0 p-1.5 border border-gray-200 backdrop-blur-sm rounded-lg">
-          <Tooltip>
-            <TooltipTrigger>
-              <SidebarTrigger />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Toggle Sidebar</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-        <div class="flex-grow overflow-y-auto py-4">
-          <Outlet />
-        </div>
-        <TanStackRouterDevtools position="bottom-right" />
-      </main>
-    </SidebarProvider>
-  ),
+  component: () => {
+    const location = useLocation();
+
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <main class="flex flex-col flex-grow h-screen overflow-hidden p-2 transition-all duration-150 ease-in data-[sidebar-open=true]:md:ml-[var(--sidebar-width)] min-w-0">
+          <div class="flex-shrink-0 p-1.5 border border-gray-200 backdrop-blur-sm rounded-lg">
+            <Tooltip openDelay={500}>
+              <TooltipTrigger>
+                <SidebarTrigger />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Toggle Sidebar</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <div class="flex-grow overflow-y-auto py-4 relative">
+            <Transition
+              mode="outin"
+              onEnter={(el, done) => {
+                const animation = el.animate(
+                  [
+                    { opacity: 0, transform: 'translateY(10px)' },
+                    { opacity: 1, transform: 'translateY(0px)' }
+                  ],
+                  { duration: 200, easing: 'ease-in-out' }
+                );
+                animation.finished.then(done);
+              }}
+              onExit={(el, done) => {
+                const animation = el.animate(
+                  [
+                    { opacity: 1 },
+                    { opacity: 0 }
+                  ],
+                  { duration: 200, easing: 'ease-in-out' }
+                );
+                animation.finished.then(done);
+              }}
+            >
+              <Show when={location().pathname} keyed>
+                {(_pathname) => ( 
+                  <div class="page-container">
+                    <Outlet />
+                  </div>
+                )}
+              </Show>
+            </Transition>
+          </div>
+          <TanStackRouterDevtools position="bottom-right" />
+        </main>
+      </SidebarProvider>
+    );
+  },
 })
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: App,
+  component: SkeuIcongenPage,
 })
 
-const dummyRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/dummy',
-  component: DummyRoute,
-});
 
-const routeTree = rootRoute.addChildren([indexRoute, dummyRoute])
+
+const routeTree = rootRoute.addChildren([indexRoute])
 
 const router = createRouter({
   routeTree,
